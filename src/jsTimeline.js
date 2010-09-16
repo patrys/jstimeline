@@ -66,10 +66,10 @@ jsTweener = function(animator, duration, callback, easing, autoDisconnect, doneC
             pos = that.easing(pos);
         }
         that.callback(pos);
+        if (delta > duration && that.doneCallback) {
+            that.doneCallback();
+        }
         if (that.autoDisconnect && (delta < 0 || delta > duration)) {
-            if (that.doneCallback) {
-                that.doneCallback();
-            }
             return false;
         }
         return true;
