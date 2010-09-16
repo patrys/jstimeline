@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>jsTimeline</title>
+    <script src="../src/jsTimeline.js"></script>
+    <script>
+        onload = function() {
+            var startTime = +new Date();
+            var speed = 10 * 3.14 / 180;
+            var test1 = document.getElementById('obj1');
+            var animator = function(time) {
+                test1.style.left = (100 + 50 * Math.sin(time * speed)) + 'px';
+                test1.style.top = (100 + 50 * Math.cos(time * speed)) + 'px';
+                return true;
+            }
+            jsTimeline.connect(animator);
+
+            var test2 = document.getElementById('obj2');
+            var iterator = function(pos) {
+                test2.style.left = (50 + 100 * pos) + 'px';
+            }
+            var done = function() {
+                test2.style.background = '#f00';
+            }
+            jsTimelineTweener.tween(30, iterator, null, true, done);
+
+            var test3 = document.getElementById('obj3');
+            var dir = false;
+            var moveRight = function(pos) {
+                test3.style.left = (50 + 100 * pos) + 'px';
+            }
+            var moveLeft = function(pos) {
+                test3.style.left = (150 - 100 * pos) + 'px';
+            }
+            var bounce = function() {
+                dir = !dir;
+                jsTimelineTweener.tween(10, dir ? moveRight : moveLeft, jsEasing.easingInOutQuadratic, true, bounce);
+            }
+            bounce();
+
+            var sliderAnimator = function(slider) {
+                function attach(callback) {
+                    function tick(e) {
+                        var e = e || window.event;
+                        var target = e.target || e.srcElement;
+                        callback(target.value);
+                    }
+                    slider.onchange = tick;
+                }
+                function detach(callback) {
+                    slider.onchange = null;
+                }
+                return jsAnimator(attach, detach);
+            }
+            var slider = document.getElementById('slider');
+            var myAnimator = sliderAnimator(slider);
+            var myTweener = jsTweener(myAnimator);
+
+            var test4 = document.getElementById('obj4');
+            var iterator = function(pos) {
+                test4.style.left = (50 + 100 * pos) + 'px';
+            }
+            myTweener.tween(100, iterator, null, false);
+
+            var canvas = document.getElementById('canvas');
+            var plotEaser = function(easer) {
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, 200, 200);
+                ctx.strokeStyle = '#000';
+                ctx.beginPath();
+                ctx.moveTo(0, 199);
+                for (var i = 0; i < 200; i++) {
+                    var pos = easer((i+1) / 200);
+                    ctx.lineTo(i, 200 - 200 * pos);
+                }
+                ctx.stroke();
+            }
+            plotEaser(jsEasing.easingInOutQuadratic);
+        }
+    </script>
+    <style>
+        div.test {
+            background: #99f;
+            border-radius: 50%;
+            height: 50px;
+            position: absolute;
+            width: 50px;
+        }
+        #obj2 {
+            background: #f99;
+            top: 200px;
+        }
+        #obj3 {
+            background: #9f9;
+            top: 250px;
+        }
+        #obj4 {
+            background: #ff9;
+            top: 300px;
+        }
+        #canvas {
+            border: 1px solid #ccc;
+            left: 250px;
+            position: absolute;
+            top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test" id="obj1"></div>
+    <div class="test" id="obj2"></div>
+    <div class="test" id="obj3"></div>
+    <div class="test" id="obj4"></div>
+    <input type="range" id="slider" value="0">
+    <canvas id="canvas" width="200" height="200">
+</body>
+</html>
