@@ -1,105 +1,84 @@
 jsAnimator = function(attach, detach) {
-    var _private = {
-        listeners: [],
-        connected: false,
-        lastTime: 0,
-        tick: function(time) {
-            _private.lastTime = time;
-            var listeners = _private.listeners;
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                var callback = listeners[i];
-                result = callback(time);
-                if (!result) {
-                    _public.disconnect(callback);
-                }
+    if (this === window) {
+        return new jsAnimator(attach, detach);
+    }
+    var that = this;
+    that.attach = attach;
+    that.detach = detach;
+    that.listeners = [];
+    that.connected = false;
+    that.lastTime = 0;
+    that.tick = function(time) {
+        that.lastTime = time;
+        var listeners = that.listeners;
+        for (var i = listeners.length - 1; i >= 0; i--) {
+            var callback = listeners[i];
+            result = callback(time);
+            if (!result) {
+                that.disconnect(callback);
+            }
+        }
+    }
+    that.connect = function(listener) {
+        var listeners = that.listeners;
+        for (var i = listeners.length - 1; i >= 0; i--) {
+            if (listeners[i] === listener) {
+                return;
+            }
+        }
+        listeners.unshift(listener);
+        that.attach(that.tick);
+    }
+    that.disconnect = function(listener) {
+        var listeners = that.listeners;
+        for (var i = listeners.length - 1; i >= 0; i--) {
+            if (listeners[i] === listener) {
+                listeners.splice(i, 1);
+                break;
+            }
+        }
+        if (!listeners.length) {
+            that.detach(that.tick);
+        }
+    }
+    that.getTime = function() {
+        return that.lastTime;
+    }
+}
+
+jsTweener = function(animator, duration, callback, easing, autoDisconnect, doneCallback) {
+    if (this === window) {
+        return new jsTweener(animator, duration, callback, easing, autoDisconnect, doneCallback);
+    }
+    var that = this;
+    that.animator = animator;
+    that.duration = duration;
+    that.callback = callback;
+    that.easing = easing;
+    that.autoDisconnect = (typeof autoDisconnect == 'undefined') ? true : autoDisconnect;
+    that.doneCallback = doneCallback;
+    that.startTime = that.animator.getTime();
+    that.tick = function(timestamp) {
+        var delta = timestamp - that.startTime;
+        var duration = that.duration;
+        var pos = (delta < 0) ? 0 : ((delta > duration) ? 1 : delta / duration);
+        if (that.easing) {
+            pos = that.easing(pos);
+        }
+        that.callback(pos);
+        if (that.autoDisconnect && (delta < 0 || delta > duration)) {
+            if (that.doneCallback) {
+                that.doneCallback();
             }
             return false;
         }
+        return true;
     }
-    var _public = {
-        connect: function(listener) {
-            var listeners = _private.listeners;
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                if (listeners[i] == listener) {
-                    return;
-                }
-            }
-            listeners.unshift(listener);
-            attach(_private.tick);
-        },
-        disconnect: function(listener) {
-            var listeners = _private.listeners;
-            for (var i = listeners.length - 1; i >= 0; i--) {
-                if (listeners[i] == listener) {
-                    listeners.splice(i, 1);
-                    break;
-                }
-            }
-            if (!listeners.length) {
-                detach(_private.tick);
-            }
-        },
-        getTime: function() {
-            return _private.lastTime;
-        }
+    that.animator.connect(that.tick);
+    that.terminate = function() {
+        that.animator.disconnect(that.tick);
     }
-    return _public;
 }
-
-jsTimeline = function() {
-    var _private = {
-        timer: null,
-        offset: 0,
-        attach: function(callback) {
-            function tick() {
-                var time = +new Date();
-                callback((time - _private.offset) / 100);
-            }
-            if (!_private.timer) {
-                _private.offset = +new Date();
-                _private.timer = setInterval(tick, 20);
-            }
-        },
-        detach: function(callback) {
-            if (_private.timer) {
-                clearInterval(_private.timer);
-                _private.timer = null;
-            }
-        }
-    }
-    _public = jsAnimator(_private.attach, _private.detach)
-    return _public;
-}()
-
-jsTweener = function(animator) {
-    var _public = {
-        tween: function(duration, callback, easing, autoDisconnect, doneCallback) {
-            var startTime = animator.getTime();
-            autoDisconnect = (typeof autoDisconnect == 'undefined') ? true : autoDisconnect;
-            tweener = function(timestamp) {
-                var delta = timestamp - startTime;
-                var pos = (delta < 0) ? 0 : ((delta > duration) ? 1 : delta / duration);
-                if (easing) {
-                    pos = easing(pos);
-                }
-                callback(pos);
-                if (autoDisconnect && (delta < 0 || delta > duration)) {
-                    if (doneCallback) {
-                        doneCallback();
-                    }
-                    return false;
-                }
-                return true;
-            }
-            callback(0);
-            animator.connect(tweener);
-            return tweener;
-        }
-    }
-    return _public;
-}
-
-jsTimelineTweener = jsTweener(jsTimeline);
 
 jsEasing = {
     easingInCubic: function(pos) {
@@ -126,3 +105,30 @@ jsEasing = {
         return -1/2 * (pos * (pos - 2) - 1);
     }
 }
+
+jsTimeline = function() {
+    var timer = null;
+    var offset = 0;
+    function attach(callback) {
+        function tick() {
+            var time = +new Date();
+            callback((time - offset) / 100);
+        }
+        if (!timer) {
+            offset = +new Date();
+            timer = setInterval(tick, 20);
+        }
+    }
+    function detach(callback) {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+    }
+    return new jsAnimator(attach, detach);
+}()
+
+jsTimelineTweener = function(duration, callback, easing, autoDisconnect, doneCallback) {
+    return new jsTweener(jsTimeline, duration, callback, easing, autoDisconnect, doneCallback);
+}
+

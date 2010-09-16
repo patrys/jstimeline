@@ -1,118 +1,196 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <title>jsTimeline</title>
     <script src="../src/jsTimeline.js"></script>
-    <script>
-        onload = function() {
-            var startTime = +new Date();
-            var speed = 10 * 3.14 / 180;
-            var test1 = document.getElementById('obj1');
-            var animator = function(time) {
-                test1.style.left = (100 + 50 * Math.sin(time * speed)) + 'px';
-                test1.style.top = (100 + 50 * Math.cos(time * speed)) + 'px';
-                return true;
-            }
-            jsTimeline.connect(animator);
-
-            var test2 = document.getElementById('obj2');
-            var iterator = function(pos) {
-                test2.style.left = (50 + 100 * pos) + 'px';
-            }
-            var done = function() {
-                test2.style.background = '#f00';
-            }
-            jsTimelineTweener.tween(30, iterator, null, true, done);
-
-            var test3 = document.getElementById('obj3');
-            var dir = false;
-            var moveRight = function(pos) {
-                test3.style.left = (50 + 100 * pos) + 'px';
-            }
-            var moveLeft = function(pos) {
-                test3.style.left = (150 - 100 * pos) + 'px';
-            }
-            var bounce = function() {
-                dir = !dir;
-                jsTimelineTweener.tween(10, dir ? moveRight : moveLeft, jsEasing.easingInOutQuadratic, true, bounce);
-            }
-            bounce();
-
-            var sliderAnimator = function(slider) {
-                function attach(callback) {
-                    function tick(e) {
-                        var e = e || window.event;
-                        var target = e.target || e.srcElement;
-                        callback(target.value);
-                    }
-                    slider.onchange = tick;
-                }
-                function detach(callback) {
-                    slider.onchange = null;
-                }
-                return jsAnimator(attach, detach);
-            }
-            var slider = document.getElementById('slider');
-            var myAnimator = sliderAnimator(slider);
-            var myTweener = jsTweener(myAnimator);
-
-            var test4 = document.getElementById('obj4');
-            var iterator = function(pos) {
-                test4.style.left = (50 + 100 * pos) + 'px';
-            }
-            myTweener.tween(100, iterator, null, false);
-
-            var canvas = document.getElementById('canvas');
-            var plotEaser = function(easer) {
-                var ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(0, 0, 200, 200);
-                ctx.strokeStyle = '#000';
-                ctx.beginPath();
-                ctx.moveTo(0, 199);
-                for (var i = 0; i < 200; i++) {
-                    var pos = easer((i+1) / 200);
-                    ctx.lineTo(i, 200 - 200 * pos);
-                }
-                ctx.stroke();
-            }
-            plotEaser(jsEasing.easingInOutQuadratic);
-        }
-    </script>
     <style>
-        div.test {
+        html {
+            background: #fff;
+            color: #333;
+        }
+        article {
+            display: block;
+            margin: 1em;
+        }
+            article header {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+        figure {
+            background: #ccc;
+            display: block;
+            margin: 1em 0;
+            padding: 1em;
+        }
+        div {
             background: #99f;
             border-radius: 50%;
+            -moz-border-radius: 50%;
             height: 50px;
-            position: absolute;
+            position: relative;
             width: 50px;
+        }
+        #obj1 {
+            margin-bottom: 100px;
         }
         #obj2 {
             background: #f99;
-            top: 200px;
         }
         #obj3 {
             background: #9f9;
-            top: 250px;
         }
         #obj4 {
             background: #ff9;
-            top: 300px;
         }
-        #canvas {
+        canvas {
             border: 1px solid #ccc;
-            left: 250px;
-            position: absolute;
-            top: 50px;
         }
     </style>
 </head>
 <body>
-    <div class="test" id="obj1"></div>
-    <div class="test" id="obj2"></div>
-    <div class="test" id="obj3"></div>
-    <div class="test" id="obj4"></div>
-    <input type="range" id="slider" value="0">
-    <canvas id="canvas" width="200" height="200">
+    <article>
+        <header>jsTimeline examples</header>
+        <article>
+            <header>Freehand animation (the “main loop” approach)</header>
+            <p>You listen directly to the timeline “ticks” and do whatever you want with the current value.</p>
+            <figure>
+                <div id="obj1"></div>
+                <script>
+                    function example1() {
+                        var startTime = +new Date();
+                        var speed = 10 * 3.14 / 180;
+                        var obj = document.getElementById('obj1');
+                        var animator = function(time) {
+                            obj.style.left = (50 + 50 * Math.sin(time * speed)) + 'px';
+                            obj.style.top = (50 + 50 * Math.cos(time * speed)) + 'px';
+                            return true;
+                        }
+                        jsTimeline.connect(animator);
+                    }
+                    example1();
+                </script>
+            </figure>
+        </article>
+        <article>
+            <header>Simple tweening with auto&ndash;stop</header>
+            <figure>
+                <div id="obj2"></div>
+                <p><input type="button" id="button2" value="Make it so, Number Two!"></p>
+                <script>
+                    function example2() {
+                        var obj = document.getElementById('obj2');
+                        var iterator = function(pos) {
+                            obj.style.left = (100 * pos) + 'px';
+                        }
+                        var done = function() {
+                            obj.style.background = '#f00';
+                        }
+                        var button = document.getElementById('button2');
+                        var previous = null;
+                        button.onclick = function() {
+                            if (previous) {
+                                previous.terminate();
+                            }
+                            obj.style.background = '#f99';
+                            previous = new jsTimelineTweener(30, iterator, null, true, done);
+                        }
+                    }
+                    example2();
+                </script>
+            </figure>
+        </article>
+        <article>
+            <header>Simple tweening with custom callbacks</header>
+            <figure>
+                <div id="obj3"></div>
+                <script>
+                    function example3() {
+                        var obj = document.getElementById('obj3');
+                        var dir = false;
+                        var moveRight = function(pos) {
+                            obj.style.left = (100 * pos) + 'px';
+                        }
+                        var moveLeft = function(pos) {
+                            obj.style.left = (100 - 100 * pos) + 'px';
+                        }
+                        var bounce = function() {
+                            dir = !dir;
+                            new jsTimelineTweener(10, dir ? moveRight : moveLeft, jsEasing.easingInOutQuadratic, true, bounce);
+                        }
+                        bounce();
+                    }
+                    example3();
+                </script>
+            </figure>
+        </article>
+        <article>
+            <header>Custom timelines and animators</header>
+            <figure>
+                <div id="obj4"></div>
+                <p><input type="range" id="slider" value="0"></p>
+                <script>
+                    function example4() {
+                        var sliderAnimator = function(slider) {
+                            function attach(callback) {
+                                function tick(e) {
+                                    var e = e || window.event;
+                                    var target = e.target || e.srcElement;
+                                    callback(target.value);
+                                }
+                                slider.onchange = tick;
+                                callback(slider.value);
+                            }
+                            function detach(callback) {
+                                slider.onchange = null;
+                            }
+                            return jsAnimator(attach, detach);
+                        }
+                        var slider = document.getElementById('slider');
+                        var myAnimator = sliderAnimator(slider);
+
+                        var obj = document.getElementById('obj4');
+                        var iterator = function(pos) {
+                            obj.style.left = (300 * pos) + 'px';
+                        }
+                        jsTweener(myAnimator, 100, iterator, jsEasing.easingInOutQuadratic, false);
+                    }
+                    example4();
+                </script>
+            </figure>
+        </article>
+        <article>
+            <header>Various easing modes</header>
+            <figure>
+                <canvas id="canvas1" width="200" height="200"></canvas>
+                <canvas id="canvas2" width="200" height="200"></canvas>
+                <canvas id="canvas3" width="200" height="200"></canvas>
+                <canvas id="canvas4" width="200" height="200"></canvas>
+                <script>
+                    var plotEaser = function(canvas, easer) {
+                        var ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(0, 0, 200, 200);
+                        ctx.strokeStyle = '#000';
+                        ctx.beginPath();
+                        ctx.moveTo(0, 199);
+                        for (var i = 0; i < 200; i++) {
+                            var pos = easer((i+1) / 200);
+                            ctx.lineTo(i, 200 - 200 * pos);
+                        }
+                        ctx.stroke();
+                    }
+                    var canvas1 = document.getElementById('canvas1');
+                    plotEaser(canvas1, jsEasing.easingInQuadratic);
+                    var canvas2 = document.getElementById('canvas2');
+                    plotEaser(canvas2, jsEasing.easingInOutQuadratic);
+                    var canvas3 = document.getElementById('canvas3');
+                    plotEaser(canvas3, jsEasing.easingInCubic);
+                    var canvas4 = document.getElementById('canvas4');
+                    plotEaser(canvas4, jsEasing.easingInOutCubic);
+                </script>
+            </figure>
+        </article>
+    </article>
 </body>
 </html>
