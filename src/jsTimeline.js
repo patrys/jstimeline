@@ -7,13 +7,20 @@ jsAnimator = function(attach, detach) {
     that.detach = detach;
     that.listeners = [];
     that.connected = false;
+    that.paused = false;
+    that.pausedAt = 0;
+    that.offset = 0;
     that.lastTime = 0;
     that.tick = function(time) {
         that.lastTime = time;
+        if (that.paused) {
+            return;
+        }
         var listeners = that.listeners;
+        var correctedTime = time - that.offset;
         for (var i = listeners.length - 1; i >= 0; i--) {
             var callback = listeners[i];
-            result = callback(time);
+            result = callback(correctedTime);
             if (!result) {
                 that.disconnect(callback);
             }
@@ -42,7 +49,22 @@ jsAnimator = function(attach, detach) {
         }
     }
     that.getTime = function() {
-        return that.lastTime;
+        if (that.paused) {
+            return that.pausedAt - that.offset;
+        }
+        return that.lastTime - that.offset;
+    }
+    that.pause = function() {
+        if (!that.paused) {
+            that.paused = true;
+            that.pausedAt = that.lastTime;
+        }
+    }
+    that.unpause = function() {
+        if (that.paused) {
+            that.paused = false;
+            that.offset += that.lastTime - that.pausedAt;
+        }
     }
 }
 
@@ -79,7 +101,6 @@ jsTweener = function(animator, duration, callback, easing, autoDisconnect, doneC
         that.animator.disconnect(that.tick);
     }
 }
-
 
 jsEasing = function(){
     var symmetric = function(easeIn, easeOut) {

@@ -58,7 +58,7 @@
             <figure>
                 <div id="obj1"></div>
                 <script>
-                    function example1() {
+                    (function() {
                         var startTime = +new Date();
                         var speed = 10 * 3.14 / 180;
                         var obj = document.getElementById('obj1');
@@ -68,8 +68,7 @@
                             return true;
                         }
                         jsTimeline.connect(animator);
-                    }
-                    example1();
+                    })();
                 </script>
             </figure>
         </article>
@@ -79,7 +78,7 @@
                 <div id="obj2"></div>
                 <p><input type="button" id="button2" value="Make it so, Number Two!"></p>
                 <script>
-                    function example2() {
+                    (function() {
                         var obj = document.getElementById('obj2');
                         var iterator = function(pos) {
                             obj.style.left = (100 * pos) + 'px';
@@ -96,8 +95,7 @@
                             obj.style.background = '#f99';
                             previous = new jsTimelineTweener(30, iterator, null, true, done);
                         }
-                    }
-                    example2();
+                    })();
                 </script>
             </figure>
         </article>
@@ -106,7 +104,7 @@
             <figure>
                 <div id="obj3"></div>
                 <script>
-                    function example3() {
+                    (function() {
                         var obj = document.getElementById('obj3');
                         var dir = false;
                         var moveRight = function(pos) {
@@ -120,8 +118,25 @@
                             new jsTimelineTweener(10, dir ? moveRight : moveLeft, jsEasing.Quad.easeIn, true, bounce);
                         }
                         bounce();
-                    }
-                    example3();
+                    })();
+                </script>
+            </figure>
+        </article>
+        <article>
+            <header>Simple tweening with custom callbacks</header>
+            <figure>
+                <p><input type="button" id="button3a" value="Freeze!"> Ok, <input type="button" id="button3b" value="you may proceed."></p>
+                <script>
+                    (function() {
+                        var button1 = document.getElementById('button3a');
+                        var button2 = document.getElementById('button3b');
+                        button1.onclick = function() {
+                            jsTimeline.pause();
+                        }
+                        button2.onclick = function() {
+                            jsTimeline.unpause();
+                        }
+                    })();
                 </script>
             </figure>
         </article>
@@ -131,7 +146,7 @@
                 <div id="obj4"></div>
                 <p><input type="range" id="slider" value="0"></p>
                 <script>
-                    function example4() {
+                    (function() {
                         var sliderAnimator = function(slider) {
                             function attach(callback) {
                                 function tick(e) {
@@ -155,8 +170,7 @@
                             obj.style.left = (300 * pos) + 'px';
                         }
                         jsTweener(myAnimator, 100, iterator, jsEasing.Quad.easeInOut, false);
-                    }
-                    example4();
+                    })();
                 </script>
             </figure>
         </article>
@@ -189,7 +203,6 @@
                         ctx.fillStyle = "Black";
                         ctx.fillText(key, 10, 100);
                     }
-
 
                     for (var key in jsEasing) {
                         var canvas = document.createElement("canvas");
