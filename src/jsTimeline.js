@@ -80,31 +80,92 @@ jsTweener = function(animator, duration, callback, easing, autoDisconnect, doneC
     }
 }
 
-jsEasing = {
-    easingInCubic: function(pos) {
-        return pos * pos * pos;
-    },
-    easingInQuadratic: function(pos) {
-        return pos * pos;
-    },
-    easingOutCubic: function(pos) {
-        return pos * pos * pos - 3 * pos * pos + 3 * pos;
-    },
-    easingOutQuadratic: function(pos) {
-        return -pos * (pos - 2);
-    },
-    easingInOutCubic: function(pos) {
-        return -2 * pos * pos * pos + 3 * pos * pos;
-    },
-    easingInOutQuadratic: function(pos) {
-        var pos = pos * 2;
-        if (pos < 1) {
-            return 1 / 2 * pos * pos;
+
+jsEasing = function(){
+    var symmetric = function(easeIn, easeOut) {
+        var inverse = function(ease, a, b, c) {  // a, b, c are just some extra vars that function might have
+            return function(pos, a, b, c) {
+                pos = 1 - pos
+                return 1 - ease(pos, a, b, c)
+            }
         }
-        pos--;
-        return -1/2 * (pos * (pos - 2) - 1);
+
+        easeIn = easeIn || inverse(easeOut);
+        easeOut = easeOut || inverse(easeIn);
+        return {'easeIn': easeIn,
+                'easeOut': easeOut,
+                'easeIn_out': function(pos, a, b, c) {
+                    if (pos < 0.5)
+                        return easeIn(pos * 2, a, b, c) / 2
+
+                    return easeOut((pos - 0.5) * 2, a, b, c) / 2 + 0.5
+                }
+        }
     }
-}
+
+    var backIn = function(pos, s) {
+        s = s || 1.70158;
+        return pos * pos * ((s + 1) * pos - s)
+    }
+
+    var bounceOut = function(pos) {
+        if (pos < 1 / 2.75) {
+            return 7.5625 * pos * pos
+        } else if (pos < 2 / 2.75) {
+            pos = pos - 1.5 / 2.75
+            return 7.5625 * pos * pos + 0.75
+        } else if (pos < 2.5 / 2.75) {
+            pos = pos - 2.25 / 2.75
+            return 7.5625 * pos * pos + .9375
+        } else {
+            pos = pos - 2.625 / 2.75
+            return 7.5625 * pos * pos + 0.984375
+        }
+    }
+
+    var expoIn = function(pos) {
+        if (pos == 0 || pos == 1)
+            return pos
+
+        return Math.pow(2, 10 * pos) * 0.001
+    }
+
+    var elasticIn = function(pos, springiness, waveLength) {
+        springiness = springiness || 0;
+        waveLength = waveLength || 0;
+
+        if (pos == 0 || pos == 1)
+            return pos
+
+        waveLength = waveLength || (1 - pos) * 0.3
+
+        var s;
+        if (springiness <= 1) {
+            springiness = pos
+            s = waveLength / 4
+        } else {
+            s = waveLength / (2 * Math.PI) * Math.asin(pos / springiness)
+        }
+
+        pos = pos - 1
+        return -(springiness * Math.pow(2, 10 * pos) * Math.sin((pos * pos - s) * (2 * Math.PI) / waveLength))
+
+    }
+
+    return {
+        Linear: symmetric(function(pos){return pos}),
+        Quad: symmetric(function(pos){return pos * pos}),
+        Cubic: symmetric(function(pos){return pos * pos * pos}),
+        Quart: symmetric(function(pos){return pos * pos * pos * pos}),
+        Quint: symmetric(function(pos){return pos * pos * pos * pos}),
+        Circ: symmetric(function(pos){return 1 - Math.sqrt(1 - pos * pos)}),
+        Sine: symmetric(function(pos){return 1 - Math.cos(pos * (Math.PI / 2))}),
+        Back: symmetric(backIn),
+        Bounce: symmetric(null, bounceOut),
+        Expo: symmetric(expoIn),
+        Elastic: symmetric(elasticIn)
+    }
+}();
 
 jsTimeline = function() {
     var timer = null;
@@ -131,4 +192,3 @@ jsTimeline = function() {
 jsTimelineTweener = function(duration, callback, easing, autoDisconnect, doneCallback) {
     return new jsTweener(jsTimeline, duration, callback, easing, autoDisconnect, doneCallback);
 }
-

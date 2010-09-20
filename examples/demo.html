@@ -117,7 +117,7 @@
                         }
                         var bounce = function() {
                             dir = !dir;
-                            new jsTimelineTweener(10, dir ? moveRight : moveLeft, jsEasing.easingInOutQuadratic, true, bounce);
+                            new jsTimelineTweener(10, dir ? moveRight : moveLeft, jsEasing.Quad.easeIn, true, bounce);
                         }
                         bounce();
                     }
@@ -154,7 +154,7 @@
                         var iterator = function(pos) {
                             obj.style.left = (300 * pos) + 'px';
                         }
-                        jsTweener(myAnimator, 100, iterator, jsEasing.easingInOutQuadratic, false);
+                        jsTweener(myAnimator, 100, iterator, jsEasing.Quad.easeIn_out, false);
                     }
                     example4();
                 </script>
@@ -162,33 +162,43 @@
         </article>
         <article>
             <header>Various easing modes</header>
-            <figure>
-                <canvas id="canvas1" width="200" height="200"></canvas>
-                <canvas id="canvas2" width="200" height="200"></canvas>
-                <canvas id="canvas3" width="200" height="200"></canvas>
-                <canvas id="canvas4" width="200" height="200"></canvas>
+            <figure id="graphs">
                 <script>
-                    var plotEaser = function(canvas, easer) {
+                    var plotEaser = function(canvas, key) {
                         var ctx = canvas.getContext('2d');
                         ctx.fillStyle = '#fff';
-                        ctx.fillRect(0, 0, 200, 200);
                         ctx.strokeStyle = '#000';
-                        ctx.beginPath();
-                        ctx.moveTo(0, 199);
-                        for (var i = 0; i < 200; i++) {
-                            var pos = easer((i+1) / 200);
-                            ctx.lineTo(i, 200 - 200 * pos);
+
+                        var plot = function(start_x, method) {
+                            ctx.fillRect(start_x, 0, 200, 200);
+                            ctx.beginPath();
+                            ctx.moveTo(start_x + 50, 199 - 50);
+                            for (var i = 0; i < 100; i++) {
+                                var pos = method((i+1) / 100);
+                                ctx.lineTo(start_x + 50 + i, 150 - 100 * pos);
+                            }
+                            ctx.stroke();
+
                         }
-                        ctx.stroke();
+
+                        plot(100, jsEasing[key].easeIn)
+                        plot(310, jsEasing[key].easeOut)
+                        plot(520, jsEasing[key].easeIn_out)
+
+                        ctx.font = "18px Serif";
+                        ctx.fillStyle = "Black";
+                        ctx.fillText(key, 10, 100);
                     }
-                    var canvas1 = document.getElementById('canvas1');
-                    plotEaser(canvas1, jsEasing.easingInQuadratic);
-                    var canvas2 = document.getElementById('canvas2');
-                    plotEaser(canvas2, jsEasing.easingInOutQuadratic);
-                    var canvas3 = document.getElementById('canvas3');
-                    plotEaser(canvas3, jsEasing.easingInCubic);
-                    var canvas4 = document.getElementById('canvas4');
-                    plotEaser(canvas4, jsEasing.easingInOutCubic);
+
+
+                    for (var key in jsEasing) {
+                        var canvas = document.createElement("canvas");
+                        canvas.width = 800;
+                        canvas.height = 200;
+                        document.getElementById("graphs").appendChild(canvas);
+
+                        plotEaser(canvas, key);
+                    }
                 </script>
             </figure>
         </article>
