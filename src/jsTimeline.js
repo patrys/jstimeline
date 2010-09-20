@@ -1,3 +1,12 @@
+/*!
+ * jsTimeline JavaScript Library
+ * http://github.com/patrys/jstimeline
+ *
+ * Copyright 2010, Patryk Zawadzki
+ * Copyright 2010, Toms Baugis
+ *
+ */
+
 jsAnimator = function(attach, detach) {
     if (this === window) {
         return new jsAnimator(attach, detach);
