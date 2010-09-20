@@ -94,7 +94,7 @@ jsEasing = function(){
         easeOut = easeOut || inverse(easeIn);
         return {'easeIn': easeIn,
                 'easeOut': easeOut,
-                'easeIn_out': function(pos, a, b, c) {
+                'easeInOut': function(pos, a, b, c) {
                     if (pos < 0.5)
                         return easeIn(pos * 2, a, b, c) / 2
 

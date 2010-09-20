@@ -154,7 +154,7 @@
                         var iterator = function(pos) {
                             obj.style.left = (300 * pos) + 'px';
                         }
-                        jsTweener(myAnimator, 100, iterator, jsEasing.Quad.easeIn_out, false);
+                        jsTweener(myAnimator, 100, iterator, jsEasing.Quad.easeInOut, false);
                     }
                     example4();
                 </script>
@@ -183,7 +183,7 @@
 
                         plot(100, jsEasing[key].easeIn)
                         plot(310, jsEasing[key].easeOut)
-                        plot(520, jsEasing[key].easeIn_out)
+                        plot(520, jsEasing[key].easeInOut)
 
                         ctx.font = "18px Serif";
                         ctx.fillStyle = "Black";
