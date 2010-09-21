@@ -28,4 +28,6 @@ It does _not_ alter any values directly, you probably already have a framework t
 
 It is capable of shutting itself down when there's nothing to do. Who wants to do nothing at 50 frames per second anyway?
 
+It does use Mozilla's native mozRequestAnimationFrame() API when present.
+
 It does not use any JavaScript frameworks or libraries.
