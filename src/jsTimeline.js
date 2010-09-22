@@ -114,11 +114,19 @@ jsTweener = function(animator, duration, callback, easing, autoDisconnect, doneC
 };
 
 jsEasing = function() {
+    /*
+       a closure of available functions - scroll to the bottom to see them all.
+       the variable "t" used throughout this function refers to a normalized
+       (0..1) value that easer represents the position on timeline. Like for
+       example second 5 of an animation with duration 10 would be 0.5.
+       A fraction is used to highlight the fact that it does not have to be just
+       about time. See demos to get an idea.
+    */
     var symmetric = function(easeIn, easeOut) {
         var inverse = function(ease, a, b, c) {  // a, b, c are just some extra vars that function might have
-            return function(pos, a, b, c) {
-                pos = 1 - pos;
-                return 1 - ease(pos, a, b, c);
+            return function(t, a, b, c) {
+                t = 1 - t
+                return 1 - ease(t, a, b, c)
             };
         };
 
@@ -127,73 +135,73 @@ jsEasing = function() {
         return {
             easeIn: easeIn,
             easeOut: easeOut,
-            easeInOut: function(pos, a, b, c) {
-                if (pos < 0.5) {
-                    return easeIn(pos * 2, a, b, c) / 2;
+            easeInOut: function(t, a, b, c) {
+                if (t < 0.5) {
+                    return easeIn(t * 2, a, b, c) / 2
                 }
-                return easeOut((pos - 0.5) * 2, a, b, c) / 2 + 0.5;
+                return easeOut((t - 0.5) * 2, a, b, c) / 2 + 0.5
             }
         };
     };
 
-    var backIn = function(pos, s) {
+    var backIn = function(t, s) {
         s = s || 1.70158;
-        return pos * pos * ((s + 1) * pos - s);
+        return t * t * ((s + 1) * t - s);
     };
 
-    var bounceOut = function(pos) {
-        if (pos < 1 / 2.75) {
-            return 7.5625 * pos * pos;
-        } else if (pos < 2 / 2.75) {
-            pos = pos - 1.5 / 2.75;
-            return 7.5625 * pos * pos + 0.75;
-        } else if (pos < 2.5 / 2.75) {
-            pos = pos - 2.25 / 2.75;
-            return 7.5625 * pos * pos + 0.9375;
+    var bounceOut = function(t) {
+        if (t < 1 / 2.75) {
+            return 7.5625 * t * t;
+        } else if (t < 2 / 2.75) {
+            t = t - 1.5 / 2.75;
+            return 7.5625 * t * t + 0.75;
+        } else if (t < 2.5 / 2.75) {
+            t = t - 2.25 / 2.75;
+            return 7.5625 * t * t + .9375;
         } else {
-            pos = pos - 2.625 / 2.75;
-            return 7.5625 * pos * pos + 0.984375;
+            t = t - 2.625 / 2.75;
+            return 7.5625 * t * t + 0.984375;
         }
     };
 
-    var expoIn = function(pos) {
-        if (pos === 0 || pos == 1) {
-            return pos;
-        }
+    var expoIn = function(t) {
+        if (t == 0 || t == 1)
+            return t;
 
-        return Math.pow(2, 10 * pos) * 0.001;
+        return Math.pow(2, 10 * t) * 0.001;
     };
 
-    var elasticIn = function(pos, springiness, waveLength) {
+    var elasticIn = function(t, springiness, waveLength) {
         springiness = springiness || 0;
         waveLength = waveLength || 0;
 
-        if (pos === 0 || pos == 1) {
-            return pos;
+        if (t == 0 || t == 1) {
+            return t;
         }
 
-        waveLength = waveLength || (1 - pos) * 0.3;
+        waveLength = waveLength || (1 - t) * 0.3;
 
         var s;
         if (springiness <= 1) {
-            springiness = pos;
+            springiness = t
             s = waveLength / 4;
         } else {
-            s = waveLength / (2 * Math.PI) * Math.asin(pos / springiness);
+            s = waveLength / (2 * Math.PI) * Math.asin(t / springiness);
         }
 
-        pos = pos - 1;
-        return -(springiness * Math.pow(2, 10 * pos) * Math.sin((pos * pos - s) * (2 * Math.PI) / waveLength));
+        t = t - 1;
+        return -(springiness * Math.pow(2, 10 * t) * Math.sin((t * t - s) * (2 * Math.PI) / waveLength));
+
     };
 
     return {
-        Linear: symmetric(function(pos){return pos;}),
-        Quad: symmetric(function(pos){return pos * pos;}),
-        Cubic: symmetric(function(pos){return pos * pos * pos;}),
-        Quart: symmetric(function(pos){return pos * pos * pos * pos;}),
-        Quint: symmetric(function(pos){return pos * pos * pos * pos;}),
-        Circ: symmetric(function(pos){return 1 - Math.sqrt(1 - pos * pos);}),
-        Sine: symmetric(function(pos){return 1 - Math.cos(pos * (Math.PI / 2));}),
+        Linear: symmetric(function(t){return t;}),
+        Quad: symmetric(function(t){return t * t;}),
+        Cubic: symmetric(function(t){return t * t * t;}),
+        Quart: symmetric(function(t){return t * t * t * t;}),
+        Quint: symmetric(function(t){return t * t * t * t * t;}),
+        Circ: symmetric(function(t){return 1 - Math.sqrt(1 - t * t);}),
+        Sine: symmetric(function(t){return 1 - Math.cos(t * (Math.PI / 2));}),
         Back: symmetric(backIn),
         Bounce: symmetric(null, bounceOut),
         Expo: symmetric(expoIn),
