@@ -123,10 +123,10 @@ jsEasing = function() {
        about time. See demos to get an idea.
     */
     var symmetric = function(easeIn, easeOut) {
-        var inverse = function(ease, a, b, c) {  // a, b, c are just some extra vars that function might have
-            return function(t, a, b, c) {
+        var inverse = function(ease) {
+            return function(t) {
                 t = 1 - t
-                return 1 - ease(t, a, b, c)
+                return 1 - ease(t)
             };
         };
 
@@ -135,17 +135,17 @@ jsEasing = function() {
         return {
             easeIn: easeIn,
             easeOut: easeOut,
-            easeInOut: function(t, a, b, c) {
+            easeInOut: function(t) {
                 if (t < 0.5) {
-                    return easeIn(t * 2, a, b, c) / 2
+                    return easeIn(t * 2) / 2
                 }
-                return easeOut((t - 0.5) * 2, a, b, c) / 2 + 0.5
+                return easeOut((t - 0.5) * 2) / 2 + 0.5
             }
         };
     };
 
-    var backIn = function(t, s) {
-        s = s || 1.70158;
+    var backIn = function(t) {
+        var s = 1.70158;
         return t * t * ((s + 1) * t - s);
     };
 
@@ -171,9 +171,9 @@ jsEasing = function() {
         return Math.pow(2, 10 * t) * 0.001;
     };
 
-    var elasticIn = function(t, springiness, waveLength) {
-        springiness = springiness || 0;
-        waveLength = waveLength || 0;
+    var elasticIn = function(t) {
+        var springiness = 0;
+        var waveLength = 0;
 
         if (t == 0 || t == 1) {
             return t;
