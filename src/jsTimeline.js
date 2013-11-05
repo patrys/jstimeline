@@ -88,7 +88,7 @@ jsTweener = function(animator, duration, callback, easing, autoDisconnect, doneC
     that.duration = duration;
     that.callback = callback;
     that.easing = easing;
-    that.autoDisconnect = (typeof autoDisconnect == 'undefined') ? true : autoDisconnect;
+    that.autoDisconnect = (typeof autoDisconnect === 'undefined') ? true : autoDisconnect;
     that.doneCallback = doneCallback;
     that.startTime = that.animator.getTime();
     that.tick = function(timestamp) {
@@ -233,27 +233,28 @@ jsGenericTimeline = function() {
 
 jsTimeline = jsGenericTimeline;
 
-if ('mozRequestAnimationFrame' in window) {
+var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+if (typeof requestAnimationFrame !== 'undefined') {
     jsNativeTimeline = function() {
         var attached = null;
         var offset = 0;
         function attach(callback) {
             function tick(ev) {
-                callback((ev.timeStamp - offset) / 100);
+                var time = +new Date();
+                callback((time - offset) / 100);
                 if (attached) {
-                    window.mozRequestAnimationFrame();
+                    requestAnimationFrame(attached);
                 }
             }
             if (!attached) {
                 attached = tick;
-                offset = window.mozAnimationStartTime;
-                window.addEventListener("MozBeforePaint", attached, false);
-                window.mozRequestAnimationFrame();
+                offset = +new Date();
+                requestAnimationFrame(attached);
             }
         }
         function detach(callback) {
             if (attached) {
-                window.removeEventListener("MozBeforePaint", attached, false);
                 attached = null;
             }
         }
