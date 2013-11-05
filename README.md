@@ -1,8 +1,10 @@
-h1. jsTimeline
+jsTimeline
+==========
 
 (And why it's a lie.)
 
-h2. What?
+What?
+-----
 
 Ever wondered if creating tons of JavaScript timers and intervals hurt your performance? Well, I did. Maybe your PC is pure awesome but what about portable devices?
 
@@ -10,13 +12,16 @@ Ever wondered why all these tweening libraries do polynomial math for _each and 
 
 Easing should be _easy_. Take that, jQuery:
 
-bc. function(pos) {
+```javascript
+function(pos) {
     return pos * pos * pos;
 }
+```
 
 Ever wished you could stop time? Or step through time to debug that piece of animation you've spent last night hacking on? I did. How about being able to attach your timeline to a slider widget?
 
-h2. But what does it do?
+But what does it do?
+--------------------
 
 You could say that it lets you animate stuff over time but that would be like calling your laptop "the thing that displays cute kittens and naked people."
 
@@ -28,6 +33,6 @@ It does _not_ alter any values directly, you probably already have a framework t
 
 It is capable of shutting itself down when there's nothing to do. Who wants to do nothing at 50 frames per second anyway?
 
-It does use Mozilla's native mozRequestAnimationFrame() API when present.
+It does use your browser's native requestAnimationFrame() API when present.
 
 It does not use any JavaScript frameworks or libraries.
